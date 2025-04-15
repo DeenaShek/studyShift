@@ -1,3 +1,37 @@
+function createModeOverlay() {
+  const overlay = document.createElement('div');
+  overlay.id = 'studyshift-overlay';
+  overlay.style.position = 'fixed';
+  overlay.style.bottom = '20px';
+  overlay.style.right = '20px';
+  overlay.style.background = '#000a';
+  overlay.style.color = '#fff';
+  overlay.style.padding = '8px 12px';
+  overlay.style.fontSize = '14px';
+  overlay.style.borderRadius = '8px';
+  overlay.style.zIndex = 999999;
+  overlay.style.userSelect = 'none';
+  overlay.style.cursor = 'move';
+  overlay.textContent = 'Mode: Unknown';
+  document.body.appendChild(overlay);
+
+  // Make draggable
+  let isDragging = false;
+  overlay.addEventListener('mousedown', () => isDragging = true);
+  document.addEventListener('mouseup', () => isDragging = false);
+  document.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      overlay.style.right = 'unset';
+      overlay.style.bottom = 'unset';
+      overlay.style.left = `${e.clientX}px`;
+      overlay.style.top = `${e.clientY}px`;
+    }
+  });
+
+  return overlay;
+}
+
+const modeOverlay = createModeOverlay();
 let currentMode = null;
 let modeCooldown = false;
 
