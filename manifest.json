@@ -24,19 +24,25 @@
   ],
 
   "commands": {
-    "focus_mode": {
-      "suggested_key": { "default": "Ctrl+Shift+1" },
-      "description": "Activate Focus Mode"
+  "focus_mode": {
+    "suggested_key": {
+      "default": "Ctrl+Shift+1"
     },
-    "help_mode": {
-      "suggested_key": { "default": "Ctrl+Shift+2" },
-      "description": "Activate Help Mode"
-    },
-    "night_mode": {
-      "suggested_key": { "default": "Ctrl+Shift+3" },
-      "description": "Activate Night Mode"
-    }
+    "description": "Activate Focus Mode"
   },
+  "help_mode": {
+    "suggested_key": {
+      "default": "Ctrl+Shift+2"
+    },
+    "description": "Activate Help Mode"
+  },
+  "night_mode": {
+    "suggested_key": {
+      "default": "Ctrl+Shift+3"
+    },
+    "description": "Activate Night Mode"
+  }
+}
 
   "sandbox": {
     "pages": ["sandbox.html"]
