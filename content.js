@@ -1,94 +1,31 @@
-// StudyShift Content Script - Optimized v1.1
 class StudyShiftUI {
   constructor() {
     this.currentMode = null;
     this.lastChange = 0;
-    this.cooldown = 2000; // 2s between mode switches
+    this.cooldown = 2000;
     this.isTracking = false;
-    
-    // Create Shadow DOM host
-    this.host = document.createElement('studyshift-host');
-    document.body.appendChild(this.host);
-    this.shadowRoot = this.host.attachShadow({ mode: 'open' });
-    this.styleTag = document.createElement('style');
-    this.shadowRoot.appendChild(this.styleTag);
-    
-    // Mode configurations (now with Shadow DOM-safe selectors)
-    this.modes = {
-      focus: `
-        .studyshift-focus-dim {
-          opacity: 0.1 !important;
-          pointer-events: none !important;
-        }
-        body::after {
-          content: "FOCUS MODE (Active)";
-          position: fixed;
-          top: 10px;
-          right: 10px;
-          background: #4CAF50;
-          color: white;
-          padding: 5px 10px;
-          border-radius: 4px;
-          z-index: 9999;
-          font-family: sans-serif;
-        }
-      `,
-      help: `
-        .studyshift-help-highlight {
-          background-color: rgba(255,255,0,0.2) !important;
-        }
-        body::after {
-          content: "HELP MODE (Active)";
-          position: fixed;
-          top: 10px;
-          right: 10px;
-          background: #FFC107;
-          color: black;
-          padding: 5px 10px;
-          border-radius: 4px;
-          z-index: 9999;
-          font-family: sans-serif;
-        }
-      `,
-      night: `
-        body.studyshift-night-mode {
-          background-color: #121212 !important;
-          color: #e0e0e0 !important;
-          filter: brightness(0.8);
-        }
-        body::after {
-          content: "NIGHT MODE (Active)";
-          position: fixed;
-          top: 10px;
-          right: 10px;
-          background: #673AB7;
-          color: white;
-          padding: 5px 10px;
-          border-radius: 4px;
-          z-index: 9999;
-          font-family: sans-serif;
-        }
-      `
-    };
-    
+
     this.init();
   }
 
-  async init() {
-    try {
-      // Check calibration status
-      const { isCalibrated } = await chrome.storage.local.get('isCalibrated');
-      
-      if (isCalibrated && typeof webgazer !== 'undefined') {
-        this.startEyeTracking();
+  init() {
+    chrome.storage.local.get('isCalibrated', (data) => {
+      const isCalibrated = data.isCalibrated;
+      if (isCalibrated) {
+        this.loadWebGazer(() => this.startEyeTracking());
       } else {
         console.warn('StudyShift: Eye tracking disabled - not calibrated');
         this.setupFallbackTriggers();
       }
-    } catch (error) {
-      console.error('StudyShift init failed:', error);
-      this.setupFallbackTriggers();
-    }
+    });
+  }
+
+  loadWebGazer(callback) {
+    if (window.webgazer) return callback();
+    const script = document.createElement('script');
+    script.src = 'https://webgazer.cs.brown.edu/webgazer.js';
+    script.onload = callback;
+    document.head.appendChild(script);
   }
 
   startEyeTracking() {
@@ -111,24 +48,11 @@ class StudyShiftUI {
 
   setupGazeListener() {
     let lastPrediction = null;
-    const predictionInterval = setInterval(() => {
-      if (!this.isTracking) {
-        clearInterval(predictionInterval);
-        return;
-      }
+    setInterval(() => {
+      if (!this.isTracking) return;
 
       const prediction = webgazer.getCurrentPrediction();
-      if (!prediction || !prediction.x) {
-        return;
-      }
-
-      // Throttle rapid predictions
-      if (lastPrediction && 
-          Math.abs(prediction.x - lastPrediction.x) < 10 &&
-          Math.abs(prediction.y - lastPrediction.y) < 10) {
-        return;
-      }
-      lastPrediction = prediction;
+      if (!prediction || !prediction.x) return;
 
       const { x, y } = prediction;
       const w = window.innerWidth;
@@ -136,7 +60,6 @@ class StudyShiftUI {
 
       if (Date.now() - this.lastChange < this.cooldown) return;
 
-      // Zone detection
       if (x < w * 0.2) {
         this.applyMode('focus');
       } else if (x > w * 0.8) {
@@ -144,83 +67,27 @@ class StudyShiftUI {
       } else if (y > h * 0.9) {
         this.applyMode('night');
       }
-    }, 300); // 300ms = balance between responsiveness and performance
+    }, 300);
   }
 
   applyMode(mode) {
-    if (!this.modes[mode] || mode === this.currentMode) return;
-
-    console.log(`StudyShift: Switching to ${mode} mode`);
-    this.styleTag.textContent = this.modes[mode];
+    if (mode === this.currentMode) return;
     this.currentMode = mode;
     this.lastChange = Date.now();
-
-    // Apply class-based styling to avoid !important conflicts
-    this.updatePageClasses(mode);
-
-    chrome.runtime.sendMessage({
-      type: 'modeChange',
-      mode: mode,
-      source: 'auto'
-    });
-  }
-
-  updatePageClasses(mode) {
-    // Remove all StudyShift classes first
-    document.body.classList.remove(
-      'studyshift-night-mode',
-      'studyshift-focus-mode'
-    );
-    
-    // Add relevant classes
-    switch(mode) {
-      case 'night':
-        document.body.classList.add('studyshift-night-mode');
-        break;
-      case 'focus':
-        this.markDistractions();
-        break;
-    }
-  }
-
-  markDistractions() {
-    // Add dimming class to distracting elements
-    const selectors = [
-      '[href*="facebook.com"]',
-      '[href*="twitter.com"]', 
-      '[href*="instagram.com"]',
-      '.sidebar',
-      '.recommended-videos'
-    ];
-    
-    selectors.forEach(selector => {
-      document.querySelectorAll(selector).forEach(el => {
-        el.classList.add('studyshift-focus-dim');
-      });
-    });
+    document.body.setAttribute('data-mode', mode);
+    console.log(`StudyShift: Mode switched to ${mode}`);
   }
 
   setupFallbackTriggers() {
-    // Manual mode listeners
     chrome.runtime.onMessage.addListener((request) => {
-      if (request.mode && this.modes[request.mode]) {
+      if (request.mode) {
         this.applyMode(request.mode);
       }
     });
-    
-    // Fallback: Auto-enable focus mode on known study sites
-    if (window.location.hostname.match(/quizlet|khanacademy|edx/)) {
-      this.applyMode('focus');
-    }
   }
 }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-  new StudyShiftUI();
-});
-
-// Fallback for dynamic pages
+// Initialize StudyShift
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
   new StudyShiftUI();
 } else {
