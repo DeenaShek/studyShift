@@ -5,42 +5,34 @@ const helpQuotes = [
   "You're one decision away from momentum.",
   "Remember why you started."
 ];
-function createModeOverlay() {
-  const overlay = document.createElement('div');
-  overlay.id = 'studyshift-overlay';
-  overlay.style.position = 'fixed';
-  overlay.style.bottom = '20px';
-  overlay.style.right = '20px';
-  overlay.style.background = '#000a';
-  overlay.style.color = '#fff';
-  overlay.style.padding = '8px 12px';
-  overlay.style.fontSize = '14px';
-  overlay.style.borderRadius = '8px';
-  overlay.style.zIndex = 999999;
-  overlay.style.userSelect = 'none';
-  overlay.style.cursor = 'move';
-  overlay.textContent = 'Mode: Unknown';
-  document.body.appendChild(overlay);
+function createFocusBar() {
+  const barContainer = document.createElement('div');
+  barContainer.id = 'focus-bar-container';
+  barContainer.style.position = 'fixed';
+  barContainer.style.top = '0';
+  barContainer.style.left = '0';
+  barContainer.style.width = '100%';
+  barContainer.style.height = '6px';
+  barContainer.style.backgroundColor = '#ddd';
+  barContainer.style.zIndex = 999999;
+  barContainer.style.display = 'none';
 
-  // Make draggable
-  let isDragging = false;
-  overlay.addEventListener('mousedown', () => isDragging = true);
-  document.addEventListener('mouseup', () => isDragging = false);
-  document.addEventListener('mousemove', (e) => {
-    if (isDragging) {
-      overlay.style.right = 'unset';
-      overlay.style.bottom = 'unset';
-      overlay.style.left = `${e.clientX}px`;
-      overlay.style.top = `${e.clientY}px`;
-    }
-  });
+  const bar = document.createElement('div');
+  bar.id = 'focus-progress-bar';
+  bar.style.height = '100%';
+  bar.style.width = '0%';
+  bar.style.backgroundColor = '#fbc02d';
+  bar.style.transition = 'width 1s linear';
 
-  return overlay;
+  barContainer.appendChild(bar);
+  document.body.appendChild(barContainer);
+  return bar;
 }
 
-const modeOverlay = createModeOverlay();
-let currentMode = null;
-let modeCooldown = false;
+const focusProgressBar = createFocusBar();
+let focusStartTime = null;
+let focusTimerInterval = null;
+
 function createHelpPopup() {
   const popup = document.createElement('div');
   popup.id = 'studyshift-help-popup';
