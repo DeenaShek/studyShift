@@ -93,3 +93,8 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 } else {
   window.addEventListener('load', () => new StudyShiftUI());
 }
+chrome.runtime.onMessage.addListener((request) => {
+  if (request.mode) {
+    this.applyMode(request.mode); // or whatever your applyMode() logic is
+  }
+});
