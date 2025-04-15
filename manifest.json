@@ -7,10 +7,20 @@
   "permissions": [
     "activeTab",
     "scripting",
-    "storage"
+    "storage",
+    "tabs"
   ],
 
   "host_permissions": ["<all_urls>"],
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon.png",
+      "48": "icons/icon.png",
+      "128": "icons/icon.png"
+    }
+  },
 
   "background": {
     "service_worker": "background.js"
@@ -19,41 +29,38 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["webgazer.js", "content.js"]
+      "js": ["content.js"]
     }
   ],
 
   "commands": {
-  "focus_mode": {
-    "suggested_key": {
-      "default": "Ctrl+Shift+1"
+    "focus_mode": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+1"
+      },
+      "description": "Activate Focus Mode"
     },
-    "description": "Activate Focus Mode"
+    "help_mode": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+2"
+      },
+      "description": "Activate Help Mode"
+    },
+    "night_mode": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+3"
+      },
+      "description": "Activate Night Mode"
+    }
   },
-  "help_mode": {
-    "suggested_key": {
-      "default": "Ctrl+Shift+2"
-    },
-    "description": "Activate Help Mode"
-  },
-  "night_mode": {
-    "suggested_key": {
-      "default": "Ctrl+Shift+3"
-    },
-    "description": "Activate Night Mode"
-  }
-}
 
   "sandbox": {
     "pages": ["sandbox.html"]
   },
 
-  "action": {
-    "default_icon": "icon.png",
-    "default_popup": "popup.html"
-  },
-
   "icons": {
-    "128": "icon.png"
+    "16": "icons/icon.png",
+    "48": "icons/icon.png",
+    "128": "icons/icon.png"
   }
 }
