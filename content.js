@@ -1,3 +1,10 @@
+const helpQuotes = [
+  "Take a deep breath. You’ve got this!",
+  "A small step today is still progress.",
+  "Distraction is normal — focus returns with awareness.",
+  "You're one decision away from momentum.",
+  "Remember why you started."
+];
 function createModeOverlay() {
   const overlay = document.createElement('div');
   overlay.id = 'studyshift-overlay';
