@@ -61,6 +61,10 @@ function debounceModeChange(newMode) {
 function applyMode(mode) {
   const body = document.body;
   body.style.transition = 'background 0.5s';
+  if (modeOverlay) {
+    modeOverlay.textContent = `Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
+  }
+
   switch (mode) {
     case 'focus':
       body.style.backgroundColor = '#fff8e1';
@@ -99,3 +103,4 @@ chrome.storage.local.get("calibrated", (data) => {
     webgazer.showVideo(false).showPredictionPoints(false).showFaceOverlay(false);
   });
 });
+
