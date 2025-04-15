@@ -20,5 +20,10 @@ function applyMode(mode) {
       body.style.backgroundColor = '#263238';
       break;
   }
-  chrome.storage.local.set({ mode });
+  chrome.storage.local.get("calibrated", (data) => {
+  if (!data.calibrated) {
+    chrome.tabs.create({ url: chrome.runtime.getURL("calibration.html") });
+  }
+});
+
 }
