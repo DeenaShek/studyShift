@@ -34,6 +34,27 @@ function createModeOverlay() {
 const modeOverlay = createModeOverlay();
 let currentMode = null;
 let modeCooldown = false;
+function createHelpPopup() {
+  const popup = document.createElement('div');
+  popup.id = 'studyshift-help-popup';
+  popup.style.position = 'fixed';
+  popup.style.bottom = '80px';
+  popup.style.right = '20px';
+  popup.style.background = '#fff';
+  popup.style.color = '#333';
+  popup.style.padding = '10px 14px';
+  popup.style.fontSize = '13px';
+  popup.style.borderRadius = '8px';
+  popup.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+  popup.style.zIndex = 999999;
+  popup.style.maxWidth = '250px';
+  popup.style.display = 'none';
+  popup.style.transition = 'opacity 0.3s ease';
+  document.body.appendChild(popup);
+  return popup;
+}
+
+const helpPopup = createHelpPopup();
 
 function loadWebGazer(callback) {
   if (window.webgazer) return callback();
