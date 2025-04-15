@@ -104,3 +104,19 @@ chrome.storage.local.get("calibrated", (data) => {
   });
 });
 
+document.addEventListener('keydown', (event) => {
+  if (!event.ctrlKey) return;
+
+  switch (event.key) {
+    case '1':
+      debounceModeChange('focus');
+      break;
+    case '2':
+      debounceModeChange('help');
+      break;
+    case '3':
+      debounceModeChange('night');
+      break;
+  }
+});
+
