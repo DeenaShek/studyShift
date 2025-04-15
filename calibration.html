@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>StudyShift Calibration</title>
+  <style>
+    body {
+      margin: 0;
+      background: #121212;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: sans-serif;
+      flex-direction: column;
+    }
+    #dot {
+      width: 20px;
+      height: 20px;
+      background: red;
+      border-radius: 50%;
+      position: absolute;
+      animation: blink 0.8s infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <h2>Calibration in Progress</h2>
+  <p>Follow the red dot with your eyes</p>
+  <div id="dot"></div>
+  <script src="calibration.js"></script>
+</body>
+</html>
