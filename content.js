@@ -81,31 +81,34 @@ function debounceModeChange(newMode) {
 function applyMode(mode) {
   const body = document.body;
   body.style.transition = 'background 0.5s';
+
   if (modeOverlay) {
     modeOverlay.textContent = `Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
   }
 
-  if (helpPopup) {
-    helpPopup.style.display = 'none'; // hide by default
-  }
+  if (helpPopup) helpPopup.style.display = 'none';
 
   switch (mode) {
     case 'focus':
       body.style.backgroundColor = '#fff8e1';
+      startFocusTimer();
       break;
+
     case 'help':
       body.style.backgroundColor = '#e3f2fd';
-      if (helpPopup) {
-        const quote = helpQuotes[Math.floor(Math.random() * helpQuotes.length)];
-        helpPopup.textContent = quote;
-        helpPopup.style.display = 'block';
-      }
+      stopFocusTimer();
+      const quote = helpQuotes[Math.floor(Math.random() * helpQuotes.length)];
+      helpPopup.textContent = quote;
+      helpPopup.style.display = 'block';
       break;
+
     case 'night':
       body.style.backgroundColor = '#263238';
+      stopFocusTimer();
       break;
   }
 }
+
 
 chrome.storage.local.get("calibrated", (data) => {
   if (!data.calibrated) return;
