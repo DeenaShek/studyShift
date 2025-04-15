@@ -1,179 +1,228 @@
-const helpQuotes = [
-  "Take a deep breath. You’ve got this!",
-  "A small step today is still progress.",
-  "Distraction is normal — focus returns with awareness.",
-  "You're one decision away from momentum.",
-  "Remember why you started."
-];
-function createFocusBar() {
-  const barContainer = document.createElement('div');
-  barContainer.id = 'focus-bar-container';
-  barContainer.style.position = 'fixed';
-  barContainer.style.top = '0';
-  barContainer.style.left = '0';
-  barContainer.style.width = '100%';
-  barContainer.style.height = '6px';
-  barContainer.style.backgroundColor = '#ddd';
-  barContainer.style.zIndex = 999999;
-  barContainer.style.display = 'none';
-
-  const bar = document.createElement('div');
-  bar.id = 'focus-progress-bar';
-  bar.style.height = '100%';
-  bar.style.width = '0%';
-  bar.style.backgroundColor = '#fbc02d';
-  bar.style.transition = 'width 1s linear';
-
-  barContainer.appendChild(bar);
-  document.body.appendChild(barContainer);
-  return bar;
-}
-
-const focusProgressBar = createFocusBar();
-let focusStartTime = null;
-let focusTimerInterval = null;
-
-function createHelpPopup() {
-  const popup = document.createElement('div');
-  popup.id = 'studyshift-help-popup';
-  popup.style.position = 'fixed';
-  popup.style.bottom = '80px';
-  popup.style.right = '20px';
-  popup.style.background = '#fff';
-  popup.style.color = '#333';
-  popup.style.padding = '10px 14px';
-  popup.style.fontSize = '13px';
-  popup.style.borderRadius = '8px';
-  popup.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
-  popup.style.zIndex = 999999;
-  popup.style.maxWidth = '250px';
-  popup.style.display = 'none';
-  popup.style.transition = 'opacity 0.3s ease';
-  document.body.appendChild(popup);
-  return popup;
-}
-
-const helpPopup = createHelpPopup();
-
-function loadWebGazer(callback) {
-  if (window.webgazer) return callback();
-
-  const script = document.createElement('script');
-  script.src = 'https://webgazer.cs.brown.edu/webgazer.js';
-  script.onload = callback;
-  document.head.appendChild(script);
-}
-
-function debounceModeChange(newMode) {
-  if (modeCooldown || newMode === currentMode) return;
-
-  currentMode = newMode;
-  modeCooldown = true;
-  chrome.storage.local.set({ mode: newMode });
-
-  applyMode(newMode);
-
-  setTimeout(() => {
-    modeCooldown = false;
-  }, 3000); // wait 3 sec before changing again
-}
-
-function applyMode(mode) {
-  const body = document.body;
-  body.style.transition = 'background 0.5s';
-
-  if (modeOverlay) {
-    modeOverlay.textContent = `Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
-  }
-
-  if (helpPopup) helpPopup.style.display = 'none';
-
-  switch (mode) {
-    case 'focus':
-      body.style.backgroundColor = '#fff8e1';
-      startFocusTimer();
-      break;
-
-    case 'help':
-      body.style.backgroundColor = '#e3f2fd';
-      stopFocusTimer();
-      const quote = helpQuotes[Math.floor(Math.random() * helpQuotes.length)];
-      helpPopup.textContent = quote;
-      helpPopup.style.display = 'block';
-      break;
-
-    case 'night':
-      body.style.backgroundColor = '#263238';
-      stopFocusTimer();
-      break;
-  }
-}
-
-
-chrome.storage.local.get("calibrated", (data) => {
-  if (!data.calibrated) return;
-
-  loadWebGazer(() => {
-    webgazer.setRegression('ridge') // or 'weightedRidge'
-      .setGazeListener((data, elapsedTime) => {
-        if (!data) return;
-
-        const x = data.x;
-        const y = data.y;
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-
-        if (y < height * 0.2 && x > width * 0.3 && x < width * 0.7) {
-          debounceModeChange('focus');
-        } else if (y > height * 0.8) {
-          debounceModeChange('night');
-        } else {
-          debounceModeChange('help');
+// StudyShift Content Script - Optimized v1.1
+class StudyShiftUI {
+  constructor() {
+    this.currentMode = null;
+    this.lastChange = 0;
+    this.cooldown = 2000; // 2s between mode switches
+    this.isTracking = false;
+    
+    // Create Shadow DOM host
+    this.host = document.createElement('studyshift-host');
+    document.body.appendChild(this.host);
+    this.shadowRoot = this.host.attachShadow({ mode: 'open' });
+    this.styleTag = document.createElement('style');
+    this.shadowRoot.appendChild(this.styleTag);
+    
+    // Mode configurations (now with Shadow DOM-safe selectors)
+    this.modes = {
+      focus: `
+        .studyshift-focus-dim {
+          opacity: 0.1 !important;
+          pointer-events: none !important;
         }
-      }).begin();
-
-    webgazer.showVideo(false).showPredictionPoints(false).showFaceOverlay(false);
-  });
-});
-
-document.addEventListener('keydown', (event) => {
-  if (!event.ctrlKey) return;
-
-  switch (event.key) {
-    case '1':
-      debounceModeChange('focus');
-      break;
-    case '2':
-      debounceModeChange('help');
-      break;
-    case '3':
-      debounceModeChange('night');
-      break;
+        body::after {
+          content: "FOCUS MODE (Active)";
+          position: fixed;
+          top: 10px;
+          right: 10px;
+          background: #4CAF50;
+          color: white;
+          padding: 5px 10px;
+          border-radius: 4px;
+          z-index: 9999;
+          font-family: sans-serif;
+        }
+      `,
+      help: `
+        .studyshift-help-highlight {
+          background-color: rgba(255,255,0,0.2) !important;
+        }
+        body::after {
+          content: "HELP MODE (Active)";
+          position: fixed;
+          top: 10px;
+          right: 10px;
+          background: #FFC107;
+          color: black;
+          padding: 5px 10px;
+          border-radius: 4px;
+          z-index: 9999;
+          font-family: sans-serif;
+        }
+      `,
+      night: `
+        body.studyshift-night-mode {
+          background-color: #121212 !important;
+          color: #e0e0e0 !important;
+          filter: brightness(0.8);
+        }
+        body::after {
+          content: "NIGHT MODE (Active)";
+          position: fixed;
+          top: 10px;
+          right: 10px;
+          background: #673AB7;
+          color: white;
+          padding: 5px 10px;
+          border-radius: 4px;
+          z-index: 9999;
+          font-family: sans-serif;
+        }
+      `
+    };
+    
+    this.init();
   }
-});
-function startFocusTimer() {
-  if (!focusProgressBar) return;
-  document.getElementById('focus-bar-container').style.display = 'block';
-  focusStartTime = Date.now();
-  clearInterval(focusTimerInterval);
 
-  focusTimerInterval = setInterval(() => {
-    const elapsed = Math.floor((Date.now() - focusStartTime) / 1000);
-    const percentage = Math.min((elapsed / 1500) * 100, 100);
-    focusProgressBar.style.width = percentage + '%';
-
-    if (percentage >= 100) {
-      clearInterval(focusTimerInterval);
-      alert("🎉 25 minutes of focus completed! Take a 5-min break.");
+  async init() {
+    try {
+      // Check calibration status
+      const { isCalibrated } = await chrome.storage.local.get('isCalibrated');
+      
+      if (isCalibrated && typeof webgazer !== 'undefined') {
+        this.startEyeTracking();
+      } else {
+        console.warn('StudyShift: Eye tracking disabled - not calibrated');
+        this.setupFallbackTriggers();
+      }
+    } catch (error) {
+      console.error('StudyShift init failed:', error);
+      this.setupFallbackTriggers();
     }
-  }, 1000);
+  }
+
+  startEyeTracking() {
+    webgazer
+      .setRegression('ridge')
+      .setTracker('clmtrackr')
+      .showPredictionPoints(false)
+      .saveDataAcrossSessions(true)
+      .begin()
+      .then(() => {
+        console.log('StudyShift: Eye tracking active');
+        this.isTracking = true;
+        this.setupGazeListener();
+      })
+      .catch((err) => {
+        console.error('StudyShift: Eye tracking failed', err);
+        this.setupFallbackTriggers();
+      });
+  }
+
+  setupGazeListener() {
+    let lastPrediction = null;
+    const predictionInterval = setInterval(() => {
+      if (!this.isTracking) {
+        clearInterval(predictionInterval);
+        return;
+      }
+
+      const prediction = webgazer.getCurrentPrediction();
+      if (!prediction || !prediction.x) {
+        return;
+      }
+
+      // Throttle rapid predictions
+      if (lastPrediction && 
+          Math.abs(prediction.x - lastPrediction.x) < 10 &&
+          Math.abs(prediction.y - lastPrediction.y) < 10) {
+        return;
+      }
+      lastPrediction = prediction;
+
+      const { x, y } = prediction;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      if (Date.now() - this.lastChange < this.cooldown) return;
+
+      // Zone detection
+      if (x < w * 0.2) {
+        this.applyMode('focus');
+      } else if (x > w * 0.8) {
+        this.applyMode('help');
+      } else if (y > h * 0.9) {
+        this.applyMode('night');
+      }
+    }, 300); // 300ms = balance between responsiveness and performance
+  }
+
+  applyMode(mode) {
+    if (!this.modes[mode] || mode === this.currentMode) return;
+
+    console.log(`StudyShift: Switching to ${mode} mode`);
+    this.styleTag.textContent = this.modes[mode];
+    this.currentMode = mode;
+    this.lastChange = Date.now();
+
+    // Apply class-based styling to avoid !important conflicts
+    this.updatePageClasses(mode);
+
+    chrome.runtime.sendMessage({
+      type: 'modeChange',
+      mode: mode,
+      source: 'auto'
+    });
+  }
+
+  updatePageClasses(mode) {
+    // Remove all StudyShift classes first
+    document.body.classList.remove(
+      'studyshift-night-mode',
+      'studyshift-focus-mode'
+    );
+    
+    // Add relevant classes
+    switch(mode) {
+      case 'night':
+        document.body.classList.add('studyshift-night-mode');
+        break;
+      case 'focus':
+        this.markDistractions();
+        break;
+    }
+  }
+
+  markDistractions() {
+    // Add dimming class to distracting elements
+    const selectors = [
+      '[href*="facebook.com"]',
+      '[href*="twitter.com"]', 
+      '[href*="instagram.com"]',
+      '.sidebar',
+      '.recommended-videos'
+    ];
+    
+    selectors.forEach(selector => {
+      document.querySelectorAll(selector).forEach(el => {
+        el.classList.add('studyshift-focus-dim');
+      });
+    });
+  }
+
+  setupFallbackTriggers() {
+    // Manual mode listeners
+    chrome.runtime.onMessage.addListener((request) => {
+      if (request.mode && this.modes[request.mode]) {
+        this.applyMode(request.mode);
+      }
+    });
+    
+    // Fallback: Auto-enable focus mode on known study sites
+    if (window.location.hostname.match(/quizlet|khanacademy|edx/)) {
+      this.applyMode('focus');
+    }
+  }
 }
 
-function stopFocusTimer() {
-  if (!focusProgressBar) return;
-  clearInterval(focusTimerInterval);
-  focusProgressBar.style.width = '0%';
-  document.getElementById('focus-bar-container').style.display = 'none';
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  new StudyShiftUI();
+});
+
+// Fallback for dynamic pages
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  new StudyShiftUI();
+} else {
+  window.addEventListener('load', () => new StudyShiftUI());
 }
-
-

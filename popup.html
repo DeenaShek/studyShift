@@ -1,16 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="description" content="StudyShift - Adaptive Chrome extension for student productivity">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>StudyShift</title>
-  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+      width: 220px;
+      padding: 15px;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f7f9fc;
+    }
+
+    h3 {
+      text-align: center;
+      margin-bottom: 12px;
+      color: #333;
+    }
+
+    button {
+      width: 100%;
+      margin: 6px 0;
+      padding: 10px;
+      font-size: 14px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #388E3C;
+    }
+
+    button#help { background: #FFC107; color: black; }
+    button#night { background: #673AB7; }
+  </style>
 </head>
 <body>
-  <h2>StudyShift</h2>
-  <p>Current Mode: <span id="current-mode">None</span></p>
-  <button id="focus-btn">Focus</button>
-  <button id="help-btn">Help</button>
-  <button id="night-btn">Night</button>
-  <button id="resetBtn">Reset Calibration</button>
+  <h3>StudyShift</h3>
+  <button id="focus">Focus Mode</button>
+  <button id="help">Help Mode</button>
+  <button id="night">Night Mode</button>
+
   <script src="popup.js"></script>
 </body>
 </html>

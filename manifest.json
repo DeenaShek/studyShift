@@ -2,28 +2,52 @@
   "manifest_version": 3,
   "name": "StudyShift",
   "version": "1.0",
-  "description": "When your mind shifts, so does your interface.",
-  "permissions": ["scripting", "storage", "activeTab"],
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon.png",
-      "48": "icons/icon.png",
-      "128": "icons/icon.png"
-    }
-  },
+  "description": "Adaptive UI for better studying",
+
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+
+  "host_permissions": ["<all_urls>"],
+
   "background": {
     "service_worker": "background.js"
   },
+
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["webgazer.js", "content.js"]
     }
   ],
+
+  "commands": {
+    "focus_mode": {
+      "suggested_key": { "default": "Ctrl+Shift+1" },
+      "description": "Activate Focus Mode"
+    },
+    "help_mode": {
+      "suggested_key": { "default": "Ctrl+Shift+2" },
+      "description": "Activate Help Mode"
+    },
+    "night_mode": {
+      "suggested_key": { "default": "Ctrl+Shift+3" },
+      "description": "Activate Night Mode"
+    }
+  },
+
+  "sandbox": {
+    "pages": ["sandbox.html"]
+  },
+
+  "action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
+  },
+
   "icons": {
-    "16": "icons/icon.png",
-    "48": "icons/icon.png",
-    "128": "icons/icon.png"
+    "128": "icon.png"
   }
 }

@@ -1,37 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>StudyShift Calibration</title>
-  <style>
-    body {
-      margin: 0;
-      background: #121212;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      font-family: sans-serif;
-      flex-direction: column;
-    }
-    #dot {
-      width: 20px;
-      height: 20px;
-      background: red;
-      border-radius: 50%;
-      position: absolute;
-      animation: blink 0.8s infinite;
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyShift Eye Calibration</title>
+  <link rel="stylesheet" href="calibration.css" />
 </head>
-<body>
-  <h2>Calibration in Progress</h2>
-  <p>Follow the red dot with your eyes</p>
-  <div id="dot"></div>
+<body class="light-mode">
+  <h1>StudyShift Calibration</h1>
+  <p>Let's train the system to understand your eye movements</p>
+
+  <main class="calibration-container">
+    <div class="instructions">
+      <strong>Tips for best results:</strong>
+      <ul>
+        <li>Sit about 50cm from your screen</li>
+        <li>Ensure good lighting on your face</li>
+        <li>Remove glasses if they cause glare</li>
+        <li>Keep your head relatively still</li>
+      </ul>
+    </div>
+
+    <p>Focus on the red dot below:</p>
+    <div class="dot"></div>
+
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div id="countdown">10 seconds remaining</div>
+    <p id="status">Initializing camera...</p>
+  </main>
+
+  <noscript>
+    <p><strong>JavaScript is required for calibration.</strong></p>
+  </noscript>
+
+  <!-- 🧠 Sandbox Iframe -->
+  <iframe src="sandbox.html" sandbox="allow-scripts allow-same-origin" style="display:none;" id="webgazer-frame"></iframe>
+  <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
   <script src="calibration.js"></script>
 </body>
 </html>
