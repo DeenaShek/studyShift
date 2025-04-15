@@ -93,12 +93,21 @@ function applyMode(mode) {
     modeOverlay.textContent = `Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
   }
 
+  if (helpPopup) {
+    helpPopup.style.display = 'none'; // hide by default
+  }
+
   switch (mode) {
     case 'focus':
       body.style.backgroundColor = '#fff8e1';
       break;
     case 'help':
       body.style.backgroundColor = '#e3f2fd';
+      if (helpPopup) {
+        const quote = helpQuotes[Math.floor(Math.random() * helpQuotes.length)];
+        helpPopup.textContent = quote;
+        helpPopup.style.display = 'block';
+      }
       break;
     case 'night':
       body.style.backgroundColor = '#263238';
