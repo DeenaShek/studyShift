@@ -151,4 +151,29 @@ document.addEventListener('keydown', (event) => {
       break;
   }
 });
+function startFocusTimer() {
+  if (!focusProgressBar) return;
+  document.getElementById('focus-bar-container').style.display = 'block';
+  focusStartTime = Date.now();
+  clearInterval(focusTimerInterval);
+
+  focusTimerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - focusStartTime) / 1000);
+    const percentage = Math.min((elapsed / 1500) * 100, 100);
+    focusProgressBar.style.width = percentage + '%';
+
+    if (percentage >= 100) {
+      clearInterval(focusTimerInterval);
+      alert("🎉 25 minutes of focus completed! Take a 5-min break.");
+    }
+  }, 1000);
+}
+
+function stopFocusTimer() {
+  if (!focusProgressBar) return;
+  clearInterval(focusTimerInterval);
+  focusProgressBar.style.width = '0%';
+  document.getElementById('focus-bar-container').style.display = 'none';
+}
+
 
