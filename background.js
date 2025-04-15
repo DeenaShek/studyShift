@@ -16,7 +16,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     });
   }
 });
-// Updated chrome.commands listener
+// Updated Chrome. commands listener
 chrome.commands.onCommand.addListener((command) => {
   let mode = null;
   const validCommands = {
@@ -25,7 +25,7 @@ chrome.commands.onCommand.addListener((command) => {
     night_mode: 'night'
   };
 
-  mode = validCommands[command]; // More scalable than if/else
+  const mode = validCommands[command]; // More scalable than if/else
 
   if (mode) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
